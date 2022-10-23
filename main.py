@@ -29,9 +29,11 @@ class ModelsTypesGetter(Resource):
     """Provide access to resource 'models types'."""
 
     def get(self):
-        """Call method of MLPipeline object providing available models'
-        types (see mlpipeline.MLPipeline.get_avaliable_model_classes()
-        documentation).
+        """
+        Возвращает список доступных типов моделей
+
+        Call method of MLPipeline object providing available models' types
+        (see mlpipeline.MLPipeline.get_avaliable_model_classes() documentation).
 
         Return output of called method converted to Response class
         with code 200.
@@ -63,8 +65,11 @@ class ModelsDeleter(Resource):
     """Provide access to resource 'models list'."""
 
     def delete(self, model_type):
-        """Call method of MLPipeline object deleting chosen model
-        type (see mlpipeline.MLPipeline.delete_model() documentation).
+        """
+        Производит удаление модели по её типу
+
+        Call method of MLPipeline object deleting chosen model type
+        (see mlpipeline.MLPipeline.delete_model() documentation).
 
         Return output of called method converted to Response class
         with code 200 if output["success_flg"] is True else 400.
@@ -104,9 +109,12 @@ class HyperparamsRuler(Resource):
     """Provide access to resource 'models hyperparams'."""
 
     def post(self, model_type):
-        """Call methods of MLPipeline object changing hyperparams of
-        chosen model type (see mlpipeline.MLPipeline.fit_hyperparams()
-        and mlpipeline.MLPipeline.set_hyperparams() documentation).
+        """
+        Производит изменение гиперпараметров моделей
+
+        Call methods of MLPipeline object changing hyperparams of chosen model type
+        (see mlpipeline.MLPipeline.fit_hyperparams() and mlpipeline.MLPipeline.set_hyperparams()
+        documentation).
 
         If 'model_type'=='all' all hyperparams of all models will be
         tuned by optuna. Else hyperparams of model with type 'model_type'
@@ -151,9 +159,11 @@ class PredictRuler(Resource):
     """Provide access to resource 'models predictions'."""
 
     def post(self, model_type):
-        """Call method of MLPipeline object predicting target by chosen
-        model type on provided dataset (see mlpipeline.MLPipeline.predict()
-        documentation).
+        """
+        Производит предсказание моделью выбранного типа
+
+        Call method of MLPipeline object predicting target by chosen model
+        type on provided dataset (see mlpipeline.MLPipeline.predict() documentation).
 
         Keyword arguments:
         model_type -- type of models for predictions.
@@ -198,8 +208,11 @@ class RefitRuler(Resource):
     """Provide access to resource 'models state'."""
 
     def post(self):
-        """Call method of MLPipeline object refiting on provided
-        dataset (see mlpipeline.MLPipeline.fit_new_data() documentation).
+        """
+        Производит переобучение моделей
+
+        Call method of MLPipeline object refiting on provided dataset
+        (see mlpipeline.MLPipeline.fit_new_data() documentation).
 
         Return output of called method converted to Response class with
         code 200 if output["success_flg"] is True and provided file
