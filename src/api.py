@@ -1,8 +1,9 @@
 from flask import make_response, jsonify, request
 from flask_restx import Api, Resource, fields, reqparse
 from werkzeug.datastructures import FileStorage
-from mlpipeline import MLPipeline
 import pandas as pd
+from .pipeline import MLPipeline
+from .model import db
 
 api = Api(
     version="1.0",
@@ -13,7 +14,7 @@ api = Api(
     default_label="Функционал"
 )
 
-pipeline = MLPipeline()
+pipeline = MLPipeline(db)
 
 
 model = api.model('models_typs_model', {
