@@ -1,24 +1,11 @@
-"""Operate with pretrained ML models.
-
-Module provides classes which enable to fit and tune pretrained
-ML models, get their predictions for user's data and operate with
-them (create, read, delete).
-
-Classes:
-
-    MLPipeline
-"""
-
 import pandas as pd
 import numpy as np
-import os
-import joblib
 from sklearn.linear_model import Ridge
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score
 from sklearn.model_selection import KFold
 import optuna
-from src.model import MLLinearModel, MLForestModel 
+from src.model import MLLinearModel, MLForestModel
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 
@@ -26,8 +13,8 @@ class MLPipeline:
     """Provide interface for operating with pretrained models."""
 
     def __init__(self, models_base):
-        """Load pretrained models from database and
-        construct an object of the class containing them."""
+        """Load database and construct an object
+        of the class containing it."""
 
         self.models_base = models_base
 
@@ -51,18 +38,6 @@ class MLPipeline:
             "forest": MLForestModel
         }
 
-        self._models = {
-            "linear": {},
-            "forest": {}
-        }
-        
-        for model_type in self._models:
-            saved_models = self._models_tables[model_type].query.all()
-            for i in range(len(saved_models)):
-                id = saved_models[i].id
-                data = saved_models[i].data
-                self._models[model_type][id] = data
-
     def validate_model_type(self, model_type):
         """Validate the existance of selected type of model.
 
@@ -72,7 +47,7 @@ class MLPipeline:
         Return dictionary with success flag and additional info
         about possible errors in input.
         """
-        if model_type not in self._models:
+        if model_type not in self._models_tables:
             return self.generate_response(
                 success_flg=False, info=f"Model type {model_type} is not available.")
         else:
@@ -89,10 +64,11 @@ class MLPipeline:
         Return dictionary with success flag and additional info
         about possible errors in input.
         """
-        if model_type not in self._models:
+        if model_type not in self._models_tables:
             return self.generate_response(
                 success_flg=False, info=f"Model type {model_type} is not available.")
-        if model_id not in list(self._models[model_type].keys()):
+        if model_id not in [
+                model.id for model in self._models_tables[model_type].query.all()]:
             return self.generate_response(
                 success_flg=False, info=f"Model id {model_id} is not available.")
         return self.generate_response(
@@ -192,13 +168,23 @@ class MLPipeline:
         if valid_res["success_flg"] is False:
             return valid_res
 
-        res = self._models[model_type][model_id].predict(
+        model = self._models_tables[model_type].query.get(model_id).data
+        res = model.predict(
             test[['Length1', 'Length2', 'Length3', 'Height', 'Width']].fillna(0))
         res = pd.Series(np.array(res), index=test.index).to_dict()
         return self.generate_response(
             success_flg=True, data=res, info=f"Predictions of {model_type} model with id = {model_id}.")
 
     def forest_optuna_fit(self, model_type, train_features, train_target):
+        """Find optimal hyperparams for forest.
+
+        Keyword arguments:
+        model_type -- model type for prediction
+        train_features -- features for objects to train model
+        train_target -- target for objects to train model
+
+        Return dictionary with best hyperparams.
+        """
         def objective(trial):
             param_grid = {
                 "n_estimators": trial.suggest_int("n_estimators", 10, 100),
@@ -228,6 +214,15 @@ class MLPipeline:
         return best_hyperparams
 
     def linear_optuna_fit(self, model_type, train_features, train_target):
+        """Find optimal hyperparams for linear model.
+
+        Keyword arguments:
+        model_type -- model type for prediction
+        train_features -- features for objects to train model
+        train_target -- target for objects to train model
+
+        Return dictionary with best hyperparams.
+        """
         def objective(trial):
             param_grid = {
                 "alpha": trial.suggest_loguniform("alpha", 1e-5, 1e2),
@@ -296,7 +291,6 @@ class MLPipeline:
         self.models_base.session.commit()
         self.models_base.session.refresh(new_element)
         new_model_id = new_element.id
-        self._models[model_type][new_model_id] = model
         return new_model_id
 
     def train_model(self, model_type, train_dataset, params=None):
@@ -335,8 +329,8 @@ class MLPipeline:
     def get_avaliable_model_classes(self):
         """Return dictionary with success flag and list of all
         available models' classes and ids"""
-        return self.generate_response(success_flg=True, data={key: sorted(
-            list(value.keys())) for key, value in self._models.items()})
+        return self.generate_response(success_flg=True, data={model_type: [
+                                      model.id for model in self._models_tables[model_type].query.all()] for model_type in self._models_tables})
 
     def delete_model(self, model_type, model_id):
         """Delete model.
@@ -358,7 +352,6 @@ class MLPipeline:
         self._models_tables[model_type].query.filter_by(id=model_id).delete()
         self.models_base.session.flush()
         self.models_base.session.commit()
-        del self._models[model_type][model_id]
 
         return self.generate_response(success_flg=True, available_models=self.get_avaliable_model_classes()[
                                       "data"], info=f"Model {model_id} of type {model_type} was deleted.")

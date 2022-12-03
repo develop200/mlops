@@ -1,9 +1,33 @@
+"""Operate with Flask application.
+
+Module provides classes and functions which enable to
+operate with Flask application (create, connect with
+database and API definition).
+
+Classes:
+
+    ModelsTypesGetter
+    ModelsDeleter
+    Predicter
+    Trainer
+
+Functions:
+
+    create_app
+"""
+
 from flask import Flask
 import os
 from sqlalchemy_utils import database_exists, create_database
 from .model import db
 
+
 def create_app():
+    """Create Flask application, connect it
+    with database and api definition.
+
+    Return ready application object.
+    """
     app = Flask(__name__)
     app.app_context().push()
 
