@@ -34,7 +34,7 @@ def create_app():
     config = {
         "SECRET_KEY": os.environ.get("SECRET_KEY"),
         "SQLALCHEMY_DATABASE_URI": os.environ.get("SQLALCHEMY_DATABASE_URI"),
-        "DEBUG": bool(os.environ.get("DEBUG"))
+        "DEBUG": bool(int(os.environ.get("DEBUG")))
     }
     app.config.from_mapping(**config)
 
@@ -44,6 +44,7 @@ def create_app():
 
     db.init_app(app)
     db.create_all()
+    db.session.commit()
 
     from .api import api
     api.init_app(app)

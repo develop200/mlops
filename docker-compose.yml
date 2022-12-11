@@ -13,7 +13,7 @@ services:
       - 5432:5432
   app:
     restart: always
-    build: .
+    image: romal200/mlops
     environment:
       - SECRET_KEY=${SECRET_KEY}
       - SQLALCHEMY_DATABASE_URI=${SQLALCHEMY_DATABASE_URI}
