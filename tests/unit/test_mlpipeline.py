@@ -1,4 +1,3 @@
-import sys
 import pandas as pd
 import json
 from src.pipeline import MLPipeline
@@ -26,9 +25,9 @@ def test_predict(
             if corrupt_dataset_mode == 0:
                 test_dataset = test_dataset.drop(["Length1"], axis=1)
             if corrupt_dataset_mode == 1:
-                test_dataset = test_dataset.iloc[:0,:]
+                test_dataset = test_dataset.iloc[:0, :]
         res = pipeline.predict(test_dataset, model_type, model_id)
-        
+
         if model_type in ["linear", "forest"] and corrupt_dataset_mode is None:
             assert res["success_flg"]
             assert type(res["data"]) == dict and all([int(return_id) == int(query_id) for return_id, query_id in zip(
@@ -77,7 +76,7 @@ def test_train(
             if corrupt_dataset_mode == 0:
                 train_dataset = train_dataset.drop(["Length1"], axis=1)
             if corrupt_dataset_mode == 1:
-                train_dataset = train_dataset.iloc[:0,:]
+                train_dataset = train_dataset.iloc[:0, :]
         res = pipeline.train_model(model_type, train_dataset, params)
         if model_type not in ["linear", "forest"]:
             assert not res["success_flg"]
@@ -108,6 +107,7 @@ def test_delete(
             assert not res["success_flg"]
         else:
             assert res["success_flg"]
-            assert set(res["available_models"].keys()) == set(["linear", "forest"])
+            assert set(res["available_models"].keys()
+                       ) == set(["linear", "forest"])
             assert set(res["available_models"]["linear"]) == set(
                 [0,]) and set(res["available_models"]["forest"]) == set([0,])

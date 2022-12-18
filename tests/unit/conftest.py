@@ -7,7 +7,6 @@ sys.path.insert(0, '../..')
 sys.path.insert(0, '../')
 sys.path.insert(0, '.')
 from src.model import MLLinearModel, db
-import src.api
 from src.api import api
 
 
@@ -56,6 +55,7 @@ def mock_linear_id_property(mocker):
         return_value=0
     )
     return mock
+
 
 @pytest.fixture()
 def mock_api():
